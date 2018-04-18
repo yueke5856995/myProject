@@ -19,35 +19,66 @@
 			}
 		});
    }
+
+   function kd(a) {
+
+       console.log(a.flag)
+       if(!a.flag){
+           console.log('1');
+           a.flag = true;
+           console.log($(a).siblings('table').find('.kd'));
+           $(a).siblings('table').find('.kd').show();
+       }else {
+           console.log('2');
+           a.flag = false;
+           $(a).siblings('table').find('.kd').hide();
+       }
+   }
    
    </script>
+<style>
+    .kd{
+        display: none;
+    }
+</style>
 
        <form name="myform" method="post" id="myform">
         <input type='hidden' id='id' value='<?php echo ($object["cashId"]); ?>'/>
         <table class="table table-hover table-striped table-bordered wst-form">
            <tr>
-             <th width='120' align='right'>提现账号：</th>
-             <td><?php if($object['accType'] == 1): ?>【支付宝】<?php else: ?>【银行卡】<?php endif; echo ($object['accNo']); ?></td>
+             <th width='120' align='right'>订单编号：</th>
+             <td><?php echo ($object['orderNo']); ?></td>
            </tr>
-           <?php if($object['accType'] == 3): ?><tr>
-             <th align='right'>开户地址：</th>
-             <td><?php echo ($object['areaName']); ?></td>
-           </tr><?php endif; ?>
-           <tr>
-             <th align='right'>提现人：</th>
-             <td><?php echo ($object['accUser']); ?></td>
+            <tr>
+                <th width='120' align='right'>订单金额：</th>
+                <td>
+                    <?php if($vo['isPay'] == 0): echo ($object['orderNo']); ?>
+                        <?php else: ?>
+                        <input type='text' value="<?php echo ($vo['totalMoney']); ?>" class='form-control' id="totalMoney"/><?php endif; ?>
+                </td>
+            </tr>
+            <a class="btn btn-primary glyphicon" onclick="kd(this)">发送快递</a>&nbsp;
+           <tr class="kd">
+             <th align='right'>快递名称：</th>
+             <td><input type='text' value="<?php echo ($vo['deliverType']); ?>" class='form-control' id="deliverType"/></td>
            </tr>
-           <tr>
-             <th align='right'>提现金额：</th>
-             <td><font color='red'>￥<?php echo ($object['money']); ?></font></td>
+           <tr class="kd">
+             <th align='right'>快递单号：</th>
+             <td><font color='red'><input type='text' value="<?php echo ($vo['deliverNo']); ?>" class='form-control' id="deliverNo"/></font></td>
            </tr>
-           <tr>
-             <th align='right'>提现说明：<br/>(用户/商家可看)</th>
+           <tr class="kd">
+             <th align='right'>快递金额</th>
              <td>
-             <textarea style='width:400px;height:100px' id='content' name='content'></textarea>
+                 <input type='text' value="<?php echo ($vo['deliverMoney']); ?>" class='form-control' id="deliverMoney"/>
              </td>
-           </tr> 
-           <tr>
+           </tr>
+            <tr class="kd">
+                <th align='right'>送出时间</th>
+                <td>
+                    <input type='text' value="<?php echo ($vo['deliveryTime']); ?>" class='form-control' id="deliveryTime"/>
+                </td>
+            </tr>
+            <tr>
              <td colspan='2' style='padding-left:250px;'>
                  <button type="button" class="btn btn-success" onclick='javascript:edit()'>确&nbsp;定</button>
                  <button type="button" class="btn btn-primary" data-dismiss="modal">返&nbsp;回</button>

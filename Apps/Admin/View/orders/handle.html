@@ -20,8 +20,15 @@
 		});
    }
 
-   function kd() {
-       $('.kd').
+   function kd(a) {
+
+       if(!a.flag){
+           a.flag = true;
+           $(a).siblings('table').find('.kd').show();
+       }else {
+           a.flag = false;
+           $(a).siblings('table').find('.kd').hide();
+       }
    }
    
    </script>
@@ -48,7 +55,7 @@
                     </if>
                 </td>
             </tr>
-            <a class="btn btn-primary glyphicon" onclick="kd()">发送快递</a>&nbsp;
+            <a class="btn btn-primary glyphicon" onclick="kd(this)">发送快递</a>&nbsp;
            <tr class="kd">
              <th align='right'>快递名称：</th>
              <td><input type='text' value="{$vo['deliverType']}" class='form-control' id="deliverType"/></td>

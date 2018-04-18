@@ -255,7 +255,7 @@
                <td width='160'>
                <a class="btn btn-primary glyphicon" href="<?php echo U('Admin/Orders/toView',array('id'=>$vo['orderId']));?>">查看</a>&nbsp;
                <a class="btn btn-success glyphicon" href="<?php echo U('Admin/orders/printOrders',array('orderIds'=>$vo['orderId']));?>">打印</a>&nbsp;
-               <a class="btn btn-success glyphicon" onclick="handle('<?php echo U('Admin/orders/tohandle',array('orderId'=>$vo['orderId']));?>')">发送快递</a>&nbsp;
+               <a class="btn btn-success glyphicon" onclick="handle('<?php echo U('Admin/orders/tohandle',array('orderId'=>$vo['orderId']));?>')">信息录入</a>&nbsp;
                </td>
              </tr><?php endforeach; endif; else: echo "" ;endif; ?>
              <tr>
