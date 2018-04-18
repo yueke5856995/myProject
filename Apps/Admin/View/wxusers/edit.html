@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+   <head>
+      <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>{$CONF['shopTitle']['fieldValue']}后台管理中心</title>
+      <link href="__PUBLIC__/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+      <link href="__ROOT__/Apps/Admin/View/css/AdminLTE.css" rel="stylesheet" type="text/css" />
+      <link href="__ROOT__/Apps/Admin/View/css/upload.css" rel="stylesheet" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="__PUBLIC__/plugins/webuploader/webuploader.css" />
+      <!--[if lt IE 9]>
+      <script src="__PUBLIC__/js/html5shiv.min.js"></script>
+      <script src="__PUBLIC__/js/respond.min.js"></script>
+      <![endif]-->
+      <script src="__PUBLIC__/js/jquery.min.js"></script>
+      <script src="__PUBLIC__/plugins/bootstrap/js/bootstrap.min.js"></script>
+      <script src="__PUBLIC__/js/common.js"></script>
+      <script src="__PUBLIC__/plugins/plugins/plugins.js"></script>
+      <script src="__PUBLIC__/plugins/formValidator/formValidator-4.1.3.js"></script>
+      <script type="text/javascript" src="__ROOT__/Apps/Admin/View/js/upload.js"></script>
+      <script type="text/javascript" src="__PUBLIC__/plugins/webuploader/webuploader.js"></script>
+      <script src="__PUBLIC__/plugins/layer/layer.min.js"></script>
+       <script type="text/javascript" src="https://webapi.amap.com/maps?v=1.3&key=37f0869604ca86505487639427d52bf6"></script>
+   </head>
+   <script>
+   var shopMap = null;
+   var ThinkPHP = window.Think = {
+	        "ROOT"   : "__ROOT__",
+	        "PUBLIC" : "__PUBLIC__",
+	        "DOMAIN" : "{:WSTDomain()}"
+	};
+
+   $(function () {
+	   $.formValidator.initConfig({
+		   theme:'Default',mode:'AutoTip',formID:"myform",debug:true,submitOnce:true,onSuccess:function(){
+				   edit();
+			       return false;
+			}});
+	   
+		$("#userPhone").inputValidator({min:0,max:25,onError:"你输入的手机号码非法,请确认"}).regexValidator({
+			regExp:"mobile",dataType:"enum",onError:"手机号码格式错误"
+		}).ajaxValidator({
+			dataType : "json",
+			async : true,
+			url : "{:U('Admin/Users/checkLoginKey')}",
+			success : function(data){
+				var json = WST.toJson(data);
+	            if( json.status == "1" ) {
+	                return true;
+				} else {
+	                return false;
+				}
+				return "该手机号码已被使用";
+			},
+			buttons: $("#dosubmit"),
+			onError : "该手机号码已存在。",
+			onWait : "请稍候..."
+		}).defaultPassed().unFormValidator(true);
+
+	
+   });
+   function edit(){
+	   var params = {}; 
+	   params.userName = $.trim($('#userName').val());
+	   params.userSex = $('input[name="userSex"]:checked').val();
+	   params.phone = $.trim($('#phone').val());
+	   params.money = $.trim($('#money').val());
+	   params.balance = $.trim($('#balance').val());
+	   params.freeWash = $.trim($('#freeWash').val());
+
+	   params.id = $('#id').val();
+	   Plugins.waitTips({title:'信息提示',content:'正在提交数据，请稍后...'});
+		$.post("{:U('Admin/WxUsers/edit')}",params,function(data,textStatus){
+			var json = WST.toJson(data);
+			if(json.status=='1'){
+				Plugins.setWaitTipsMsg({ content:'操作成功',timeout:1000,callback:function(){
+				   location.href='{:U("Admin/WxUsers/index")}';
+				}});
+			}else if(json.status=='-2'){
+				Plugins.setWaitTipsMsg({content:'用户手机号码或邮箱已存在!',timeout:1000});
+			}else{
+				Plugins.closeWindow();
+				Plugins.Tips({title:'信息提示',icon:'error',content:'操作失败!',timeout:1000});
+			}
+		});
+   }
+
+   function ShopMapInit(){
+       var opts = {zoom:$('#mapLevel').val(),longitude:$('.longitude').val(),latitude:$('.latitude').val()};
+       if(shopMap)return;
+       $('#shopMap').show();
+       shopMap = new AMap.Map('mapContainer', {
+           view: new AMap.View2D({
+               zoom:opts.zoom
+           })
+       });
+       if(opts.longitude!='' && opts.latitude!=''){
+
+           shopMap.setZoomAndCenter(opts.zoom, new AMap.LngLat(opts.longitude, opts.latitude));
+           var latitudes = $('.latitude'),
+               longitude=$('.longitude');
+           console.log(latitudes,longitude);
+           var marker;
+           latitudes.each(function(index,item){
+               console.log(item,index);
+               console.log(longitude.eq(index).val());
+               marker = new AMap.Marker({
+                   position: new AMap.LngLat(longitude.eq(index).val(), latitudes.eq(index).val()), //基点位置
+                   icon:"http://webapi.amap.com/images/marker_sprite.png"
+               });
+               marker.setMap(shopMap);
+           });
+       }
+       shopMap.plugin(["AMap.ToolBar"],function(){
+           toolBar = new AMap.ToolBar();
+           shopMap.addControl(toolBar);
+           toolBar.show();
+       });
+
+       AMap.event.addListener(shopMap,'click',function(e){
+           shopMap.clearMap();
+           $('#longitude').val(e.lnglat.getLng());
+           $('#latitude').val(e.lnglat.getLat());
+           var marker = new AMap.Marker({
+               position: e.lnglat, //基点位置
+               icon:"http://webapi.amap.com/images/marker_sprite.png"
+           });
+           marker.setMap(shopMap);
+       });
+       AMap.event.addListener(shopMap,'zoomchange',function(e){
+           $('#mapLevel').val(this.getZoom());
+       })
+   }
+   </script>
+   <script>
+       $(function () {
+           ShopMapInit();
+       })
+   </script>
+   <script>
+   function ucardWash(id){
+   var url = "{:U('Admin/Ucard/UcardWash',array('id'=>'__0'))}".replace('__0',id);
+   Plugins.Modal({url:url,title:'查看流水',width:500});
+   }
+   </script>
+   <script>
+       function changeUcardStatus(t,id){
+           Plugins.waitTips({title:'信息提示',content:'正在操作，请稍后...'});
+           $.post("{:U('Admin/Ucard/changeUcardStatus')}",{id:id,status:t},function(data,textStatus){
+               var json = WST.toJson(data);
+               if(json.status=='1'){
+                   Plugins.setWaitTipsMsg({content:'操作成功',timeout:1000,callback:function(){
+                       location.reload();
+                   }});
+               }else{
+                   Plugins.closeWindow();
+                   Plugins.Tips({title:'信息提示',icon:'error',content:'操作失败!',timeout:1000});
+               }
+           });
+       }
+   </script>
+   <body class="wst-page">
+   			
+       <form name="myform" method="post" id="myform" autocomplete="off">
+        <input type='hidden' id='id' value='{$object.userId}'/>
+ 
+        <table class="table table-hover table-striped table-bordered wst-form">
+           <tr>
+             <th width='120' align='right'>编号：</th>
+             <td>{$object.userId}</td>
+             <td rowspan='5'>
+             	<div id="preview_Filedata">
+                 <img id='preview' src='<if condition="$object['userPhoto'] =='' ">__ROOT__/Apps/Admin/View/img/staff.png<else/>{$object['userPhoto']}</if>' height='160'/><br/>
+	            </div>
+             </td>
+           </tr>
+           <tr>
+             <th align='right'>昵称：</th>
+             <td>
+             <input type='text' id='userName' class="form-control wst-ipt" value='{$object.userName}' maxLength='20'/>
+             </td>
+           </tr>
+           <tr>
+             <th align='right'>性别：</th>
+             <td>
+             <label>
+             <input type='radio' id='userSex1' name='userSex' <if condition="$object['userSex'] eq 1 ">checked</if> value='1'/>男
+             </label>
+             <label>
+             <input type='radio' id='userSex2' name='userSex' <if condition="$object['userSex'] eq 2 ">checked</if> value='2'/>女
+             </label>
+             <label>
+             <input type='radio' id='userSex0' name='userSex' <if condition="$object['userSex'] eq 0 ">checked</if> value='0'/>保密
+             </label>
+             </td>
+           </tr>
+           <tr>
+             <th align='right'>手机号码：</th>
+             <td>
+             <input type='text' id='phone' name='phone' class="form-control wst-ipt" value='{$object.phone}' maxLength='11'/>
+             </td>
+           </tr>
+           <tr>
+             <th align='right'>金币数：</th>
+             <td>
+             <input type='number'  id="money" name='money' class="form-control wst-ipt"  value='{$object.money}' maxLength='25'/>
+             </td>
+           </tr>
+            <tr>
+                <th align='right'>历史总金币数：</th>
+                <td>
+                    <input type='number'  id="balance" name='totalMoney' class="form-control wst-ipt"  value='{$object.totalMoney}' maxLength='25'/>
+                </td>
+            </tr>
+            <tr style="height:80px;">
+	             <th align='right'>openId：</th>
+	             <td colspan='2'>
+	             	{$object.openId}
+	             </td>
+           </tr>
+            <tr style="height:80px;">
+            <th align='right'>名下卡片：</th>
+            <td colspan='2'>
+                <div>
+                    <table width="100%">
+                        <tr>
+                            <th>卡片ID</th>
+                            <th>卡名</th>
+                            <th>类型</th>
+                            <th>折扣</th>
+                            <th>余额</th>
+                            <th>开卡时间</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                        <volist name="cardList" id="vo">
+                            <tr style="height: 40px">
+                                <th>{$vo.ucardId}</th>
+                                <th>{$vo.ucardName}</th>
+                                <th>
+                                    <switch name="vo['ucardType']">
+                                        <case value="1">储值卡</case>
+                                        <case value="2">活动卡</case>
+                                    </switch>
+                                </th>
+                                <th>{:$vo['ucardDiscount']}%</th>
+                                <th>￥{$vo.ucardScore}</th>
+                                <th>{$vo.createTime}</th>
+                                <th>
+                                    <div class="dropdown">
+                                        <if condition="$vo['ucardStatus']==0 ">
+                                            <button class="btn btn-danger dropdown-toggle wst-btn-dropdown"  type="button" data-toggle="dropdown">
+                                                停止
+                                                <span class="caret"></span>
+                                            </button>
+                                            <else/>
+                                            <button class="btn btn-success dropdown-toggle wst-btn-dropdown" type="button" data-toggle="dropdown">
+                                                正常
+                                                <span class="caret"></span>
+                                            </button>
+                                        </if>
+                                        <ul class="dropdown-menu" role="menu">
+                                            <li role="presentation"><a role="menuitem" tabindex="-1" href="javascript:changeUcardStatus(0,{$vo['ucardId']})">停止</a></li>
+                                            <li role="presentation"><a role="menuitem" tabindex="-1" href="javascript:changeUcardStatus(1,{$vo['ucardId']})">正常</a></li>
+                                        </ul>
+                                    </div>
+                                </th>
+                                <th>
+                                    <a class="btn btn-default glyphicon "onclick="ucardWash({$vo['ucardId']})">查看流水</a>&nbsp;
+                                </th>
+                            </tr>
+                        </volist>
+                    </table>
+                </div>
+
+            </td>
+        </tr>
+            <tr style="height:80px;">
+                <th align='right'>地址列表：</th>
+                <td colspan='2'>
+            <div>
+                <table width="100%">
+                    <tr>
+                        <th> &nbsp;</th>
+                        <th>姓名</th>
+                        <th>手机号</th>
+                        <th>定位地址</th>
+                        <th>精确地址</th>
+                    </tr>
+                    <volist name="address" id="vo">
+                        <tr style="height: 40px">
+                            <th><if condition="$vo.isDefault eq 1"><span style="color: red">(默认)</span></if></th>
+                            <th>{$vo.userName}</th>
+                            <th>{$vo.userPhone}</th>
+                            <th>{$vo.addr}</th>
+                            <th>{$vo.address}</th>
+                            <input type="hidden" class="latitude" value="{$vo.latitude}">
+                            <input type="hidden" class="longitude" value="{$vo.longitude}">
+                        </tr>
+                    </volist>
+                </table>
+            </div>
+
+                </td>
+            </tr>
+
+            <tr style="height:80px;">
+                <th align='right'>地图：</th>
+                <td colspan='2'>
+                    <div id="mapContainer" style='height:400px;width:90%;'>等待地图初始化...</div>
+                    <div style='display:none'>
+                    </div>
+                </td>
+           <tr>
+             <td colspan='3' style='padding-left:250px;'>
+                 <button type="submit" class="btn btn-success">保&nbsp;存</button>
+                 <button type="button" class="btn btn-primary" onclick='javascript:location.href="{:U('Admin/WxUsers/index')}"'>返&nbsp;回</button>
+             </td>
+           </tr>
+        </table>
+       </form>
+   </body>
+</html>

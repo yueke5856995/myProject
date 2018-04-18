@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+   <head>
+      <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>{$CONF['shopTitle']['fieldValue']}后台管理中心</title>
+      <link href="__PUBLIC__/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+      <link href="__ROOT__/Apps/Admin/View/css/AdminLTE.css" rel="stylesheet" type="text/css" />
+      <!--[if lt IE 9]>
+      <script src="__PUBLIC__/js/html5shiv.min.js"></script>
+      <script src="__PUBLIC__/js/respond.min.js"></script>
+      <![endif]-->
+      <script src="__PUBLIC__/js/jquery.min.js"></script>
+      <script src="__PUBLIC__/plugins/bootstrap/js/bootstrap.min.js"></script>
+      <script src="__PUBLIC__/js/common.js"></script>
+      <script src="__PUBLIC__/plugins/plugins/plugins.js"></script>
+   </head>
+   <script>
+   function getAreaList(objId,parentId,t,id){
+	   var params = {};
+	   params.parentId = parentId;
+	   $('#'+objId).empty();
+	   if(t<1){
+		   $('#areaId3').empty();
+		   $('#areaId3').html('<option value="">请选择</option>');
+	   }
+	   var html = [];
+	   $.post("{:U('Admin/Areas/queryByList')}",params,function(data,textStatus){
+		    html.push('<option value="">请选择</option>');
+			var json = WST.toJson(data);
+			if(json.status=='1' && json.list.length>0){
+				var opts = null;
+				for(var i=0;i<json.list.length;i++){
+					opts = json.list[i];
+					html.push('<option value="'+opts.areaId+'" '+((id==opts.areaId)?'selected':'')+'>'+opts.areaName+'</option>');
+				}
+			}
+			$('#'+objId).html(html.join(''));
+	   });
+   }
+   $(function(){
+       <PHP>if($areaId1!=0){</PHP>
+	   getAreaList("areaId2",'{$areaId1}',0,'{$areaId2}');
+	   <PHP>}</PHP>  
+	   <PHP>if($areaId2 != 0){</PHP>
+	   getAreaList("areaId3",'{$areaId2}',1,'{$areaId3}');
+	   <PHP>}</PHP>
+	   $('#orderStatus').val({$orderStatus});
+   });
+   </script>
+   <body class='wst-page'>
+
+       <div class="wst-body"> 
+        <table class="table table-hover table-striped table-bordered wst-list">
+               <thead>
+               <tr>
+                   <th>
+                       序号
+                   </th>
+                   <th>
+                       商品
+                   </th>
+                   <th>
+                       订单编号：
+                   </th>
+
+                   <th>
+                       客户名称
+                   </th>
+                   <th>
+                       客户手机
+                   </th>
+                   <th>
+                       客户地址
+                   </th>
+                   <th>
+                       总额
+                   </th>
+                   <th>
+                       下单时间
+                   </th>
+                   <th>
+                       订单状态
+                   </th>
+               </tr>
+               </thead>
+           <tbody>
+           <empty name="Page['root']">
+               <tr>
+                   <td colspan='9' align='center'>暂无数据</td>
+               </tr>
+           </empty>
+           <volist name="Page['root']" id="vo" key='key'>
+             <tr>
+               <td width='350'>
+               <div style='width:350px;'>
+               <volist name="vo['goodslist']" id="goods">
+				  <img style='margin:2px;' src="__ROOT__/{$goods['goodsThums']}" height="50" width="50" title='{$goods['goodsName']}'/>
+			   </volist>
+			   </div>
+               </td>
+               <td>客户名称:{$vo['userName']} 客户手机:{$vo['userPhone']} <br/>客户地址:{$vo['userAddress']}</td>
+                 <td>
+                     {$vo['totalMoney']}
+                 </td>
+                 <td>
+                     {$vo['useCoupons']}
+                 </td>
+               <td width='120'>
+               ￥{$vo['realTotalMoney']}
+               </td>
+               <td width='150'>{$vo['createTime']}</td>
+               <td width='120'>
+               <if condition='$vo["orderStatus"] eq 0'>未支付
+               <elseif condition='$vo["orderStatus"] eq 1'/>下单成功
+               <elseif condition='$vo["orderStatus"] eq 2'/>上门取件
+			   <elseif condition='$vo["orderStatus"] eq 3'/>取衣成功
+			   <elseif condition='$vo["orderStatus"] eq 4'/>正在清洗
+			   <elseif condition='$vo["orderStatus"] eq 5'/>清洗完成
+			   <elseif condition='$vo["orderStatus"] eq 6'/>物流配送
+			   <elseif condition='$vo["orderStatus"] eq 7'/>上门送衣
+			   <elseif condition='$vo["orderStatus"] eq 8'/>送衣完成
+			   <elseif condition='$vo["orderStatus"] eq 9'/>订单完成
+               <else/>
+                   买家已删除
+			   </if>
+               </td>
+               <td width='120'>
+               <a class="btn btn-primary glyphicon" href="{:U('Admin/Orders/toView',array('id'=>$vo['orderId']))}"">查看</a>&nbsp;
+               </td>
+             </tr>
+             </volist>
+             <tr>
+                <td colspan='9' align='center'>{$Page['pager']}</td>
+             </tr>
+           </tbody>
+        </table>
+       </div>
+   </body>
+</html>

@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+   <head>
+      <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>{$CONF['mallTitle']}后台管理中心</title>
+      <link href="__PUBLIC__/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+      <link href="__ROOT__/Apps/Admin/View/css/AdminLTE.css" rel="stylesheet" type="text/css" />
+      <!--[if lt IE 9]>
+      <script src="__PUBLIC__/js/html5shiv.min.js"></script>
+      <script src="__PUBLIC__/js/respond.min.js"></script>
+      <![endif]-->
+      <script src="__PUBLIC__/js/jquery.min.js"></script>
+      <script src="__PUBLIC__/plugins/bootstrap/js/bootstrap.min.js"></script>
+      <script src="__PUBLIC__/js/common.js"></script>
+      <script src="__PUBLIC__/plugins/plugins/plugins.js"></script>
+      <style type="text/css">
+		#preview{border:1px solid #cccccc; background:#CCC;color:#fff; padding:5px; display:none; position:absolute;}
+	  </style>
+   </head>
+   <script>
+   function batchChangeStatus(v)
+   {
+   	   var ids = [];
+	   $('.chk').each(function(){
+		   if($(this).prop('checked'))ids.push($(this).val());
+	   })
+	   Plugins.waitTips({title:'信息提示',content:'正在操作，请稍后...'});
+	   $.post("{:U('Admin/Goods/changeGoodsStatus')}",{id:ids.join(','),status:v},function(data,textStatus){
+				var json = WST.toJson(data);
+				if(json.status=='1'){
+					Plugins.setWaitTipsMsg({content:'操作成功',timeout:1000,callback:function(){
+					    location.reload();
+					}});
+				}else{
+					Plugins.closeWindow();
+					Plugins.Tips({title:'信息提示',icon:'error',content:'操作失败!',timeout:1000});
+				
+				}
+	   });
+   }
+
+   function changeStatus(id,v){
+	   Plugins.waitTips({title:'信息提示',content:'正在操作，请稍后...'});
+	   $.post("{:U('Admin/Goods/changeGoodsStatus')}",{id:id,status:v},function(data,textStatus){
+				var json = WST.toJson(data);
+				if(json.status=='1'){
+					Plugins.setWaitTipsMsg({content:'操作成功',timeout:1000,callback:function(){
+					    location.reload();
+					}});
+				}else{
+					
+					Plugins.Tips({title:'信息提示',icon:'error',content:'操作失败!',timeout:1000});
+				
+				}
+	   });
+   }
+   function batchBest(v){
+	   var ids = [];
+	   $('.chk').each(function(){
+		   if($(this).prop('checked'))ids.push($(this).val());
+	   })
+	   Plugins.waitTips({title:'信息提示',content:'正在操作，请稍后...'});
+	   $.post("{:U('Admin/Goods/changeBestStatus')}",{id:ids.join(','),status:v},function(data,textStatus){
+				var json = WST.toJson(data);
+				if(json.status=='1'){
+					Plugins.setWaitTipsMsg({content:'操作成功',timeout:1000,callback:function(){
+					    location.reload();
+					}});
+				}else{
+					Plugins.closeWindow();
+					Plugins.Tips({title:'信息提示',icon:'error',content:'操作失败!',timeout:1000});
+				
+				}
+	   });
+   }
+   function batchRecom(v){
+	   var ids = [];
+	   $('.chk').each(function(){
+		   if($(this).prop('checked'))ids.push($(this).val());
+	   })
+	   Plugins.waitTips({title:'信息提示',content:'正在操作，请稍后...'});
+	   $.post("{:U('Admin/Goods/changeRecomStatus')}",{id:ids.join(','),status:v},function(data,textStatus){
+				var json = WST.toJson(data);
+				if(json.status=='1'){
+					Plugins.setWaitTipsMsg({content:'操作成功',timeout:1000,callback:function(){
+					    location.reload();
+					}});
+				}else{
+					Plugins.closeWindow();
+					Plugins.Tips({title:'信息提示',icon:'error',content:'操作失败!',timeout:1000});
+				
+				}
+	   });
+   }
+   function checkAll(v){
+	   $('.chk').each(function(){
+		   $(this).prop('checked',v);
+	   })
+   }
+   $.fn.imagePreview = function(options){
+		var defaults = {}; 
+		var opts = $.extend(defaults, options);
+		var t = this;
+		xOffset = 5;
+		yOffset = 20;
+		if(!$('#preview')[0])$("body").append("<div id='preview'><img width='200' src=''/></div>");
+		$(this).hover(function(e){
+			   $('#preview img').attr('src',"__ROOT__/"+$(this).attr('img'));      
+			   $("#preview").css("top",(e.pageY - xOffset) + "px").css("left",(e.pageX + yOffset) + "px").show();      
+		  },
+		  function(){
+			$("#preview").hide();
+		}); 
+		$(this).mousemove(function(e){
+			   $("#preview").css("top",(e.pageY - xOffset) + "px").css("left",(e.pageX + yOffset) + "px");
+		});
+	}
+   function getAreaList(objId,parentId,t,id){
+	   var params = {};
+	   params.parentId = parentId;
+	   $('#'+objId).empty();
+	   if(t<1){
+		   $('#areaId2').html('<option value="">请选择</option>');
+		   if(parentId==0)return;
+	   }
+	   var html = [];
+	   $.post("{:U('Admin/Areas/queryByList')}",params,function(data,textStatus){
+		    html.push('<option value="">请选择</option>');
+			var json = WST.toJson(data);
+			if(json.status=='1' && json.list.length>0){
+				var opts = null;
+				for(var i=0;i<json.list.length;i++){
+					opts = json.list[i];
+					html.push('<option value="'+opts.areaId+'" '+((id==opts.areaId)?'selected':'')+'>'+opts.areaName+'</option>');
+				}
+			}
+			$('#'+objId).html(html.join(''));
+	   });
+   }
+   function getCatList(objId,parentId,t,id){
+	   var params = {};
+	   params.id = parentId;
+	   $('#'+objId).empty();
+	   if(t<1){
+		   $('#goodsCatId3').empty();
+		   $('#goodsCatId3').html('<option value="0">请选择</option>');
+		   if(parentId==0){
+			   $('#goodsCatId2').html('<option value="0">请选择</option>');
+			   return;
+		   }
+	   }
+	   var html = [];
+	   $.post("{:U('Home/GoodsCats/queryByList')}",params,function(data,textStatus){
+		    html.push('<option value="0">请选择</option>');
+			var json = WST.toJson(data);
+			if(json.status=='1' && json.list){
+				var opts = null;
+				for(var i=0;i<json.list.length;i++){
+					opts = json.list[i];
+					html.push('<option value="'+opts.catId+'" '+((id==opts.catId)?'selected':'')+'>'+opts.catName+'</option>');
+				}
+			}
+			$('#'+objId).html(html.join(''));
+	   });
+   }
+   $(document).ready(function(){
+	    $('.imgPreview').imagePreview();
+	    <notempty name='areaId1'>
+		   getAreaList("areaId2",'{$areaId1}',0,'{$areaId2}');
+		</notempty>
+		<if condition="$goodsCatId1  neq 0 ">
+		getCatList("goodsCatId2",{$goodsCatId1},0,{$goodsCatId2});
+		</if>
+		<if condition="$goodsCatId2 neq 0 ">
+		getCatList("goodsCatId3",{$goodsCatId2},1,{$goodsCatId3});
+		</if>
+   });
+   </script>
+   <body class='wst-page'>
+    <form method='post' action='{:U("Admin/Goods/index")}' autocomplete="off">
+       <div class='wst-tbar'>
+  分类：<select id='goodsCatId1' name='goodsCatId1' onchange='javascript:getCatList("goodsCatId2",this.value,0)'>
+	                <option value='0'>请选择</option>
+	                <volist name="goodsCatsList" id="vo">
+	                <option value='{$vo['catId']}' <if condition="$goodsCatId1 == $vo['catId'] ">selected</if>>{$vo['catName']}</option>
+	                </volist>
+	             </select>
+	             <select id='goodsCatId2' name='goodsCatId2' onchange='javascript:getCatList("goodsCatId3",this.value,1);'>
+	                <option value='0'>请选择</option>
+	             </select>
+
+   </div>
+   <div class='wst-tbar'>
+       衣物商品：<input type='text' id='goodsName' name='goodsName' value='{$goodsName}'/>
+     <!--商品类型：
+  <select id='isAdminRecom' name='isAdminRecom'>
+    <option value='-1'>全部</option>
+    <option value='1' <if condition="$isAdminRecom eq 1">selected</if>>推荐</option>
+    <option value='0' <if condition="$isAdminRecom eq 0">selected</if>>非推荐</option>
+  </select>-->
+   商品状态:
+   <select id='goodsStatus' name='goodsStatus'>
+       <option value='1' <if condition="$goodsStatus eq 1">selected</if>>在售</option>
+       <option value='2' <if condition="$goodsStatus eq 2">selected</if>>下架</option>
+       <option value='3' <if condition="$goodsStatus eq 3">selected</if>>取回</option>
+       <option value='4' <if condition="$goodsStatus eq 4">selected</if>>售出</option>
+       <option value='5' <if condition="$goodsStatus eq 5">selected</if>>配送</option>
+       <option value='6' <if condition="$goodsStatus eq 6">selected</if>>完成</option>
+   </select>
+  <button type="submit" class="btn btn-primary glyphicon glyphicon-search">查询</button> 
+       </div>
+       </form>
+       <div class='wst-body'>
+        <div class='wst-tbar'> 
+        <php>if(in_array('splb_04',$WST_STAFF['grant']) and $goodsStatus == 1){</php>
+       <!-- <button type="button" class="btn btn-primary glyphicon" onclick='javascript:batchRecom(1)'>设置推荐</button>
+        <button type="button" class="btn btn-primary glyphicon" onclick='javascript:batchRecom(0)'>取消推荐</button>-->
+        <button type="button" class="btn btn-primary glyphicon" onclick='javascript:batchChangeStatus(2)'>批量下架</button>
+        <php>}</php>  
+        </div>
+        <table class="table table-hover table-striped table-bordered wst-list">
+           <thead>
+             <tr>
+               <th width='2'><input type='checkbox' name='chk' onclick='javascript:WST.checkChks(this,".chk")'/></th>
+
+               <th width='180'>商品名称</th>
+               <th width='60'>卖家名称</th>
+               <th width='40'>价格</th>
+               <th width='100'>分类</th>
+               <th width='25'>所在商店</th>
+               <th width='25'>状态</th>
+               <th width='80'>操作</th>
+             </tr>
+           </thead>
+           <tbody>
+            <volist name="Page['root']" id="vo" key='i'>
+             <tr >
+               <td><input type='checkbox' class='chk' name='chk_{$vo['goodsId']}' value='{$vo['goodsId']}'/></td>
+
+
+               <td img='{$vo['goodsThums']}' class='imgPreview'>
+               <img src='__ROOT__/{$vo['goodsThums']}' width='50'/>
+               {$vo['goodsName']}
+               </td>
+               <td>{$vo['userName']}&nbsp;</td>
+               <td>{$vo['shopPrice']}&nbsp;</td>
+               <td>{$vo['catName']}&nbsp;</td>
+               <td>
+               {$vo.shopName}
+               </td>
+               <td>
+                  <!-- <switch name="vo['goodsStatus']">
+                       <case value="1"><font class="btn btn-primary">在售</font></case>
+                       <case value="2"><font class="btn btn-primary">下架</font></case>
+                       <case value="3"><font class="btn btn-primary">取回</font></case>
+                       <case value="4"><font class="btn btn-primary">售出</font></case>
+                       <case value="5"><font class="btn btn-primary">配送</font></case>
+                       <case value="6"><font class="btn btn-primary">完成</font></case>
+                   </switch>-->
+                   <div class="dropdown">
+                    <switch name="vo['goodsStatus']">
+                       <case value="1">
+                           <button class="btn btn-danger dropdown-toggle wst-btn-dropdown"  type="button" data-toggle="dropdown">
+                               在售
+                               <span class="caret"></span>
+                           </button>
+                       </case>
+                       <case value="2">
+                       <button class="btn btn-danger dropdown-toggle wst-btn-dropdown"  type="button" data-toggle="dropdown">
+                           下架
+                           <span class="caret"></span>
+                       </button>
+                       </case>
+                       <case value="3">
+                           <button class="btn btn-danger dropdown-toggle wst-btn-dropdown"  type="button" data-toggle="dropdown">
+                               取回
+                               <span class="caret"></span>
+                           </button>
+                       </case>
+                       <case value="4">
+                           <button class="btn btn-danger dropdown-toggle wst-btn-dropdown"  type="button" data-toggle="dropdown">
+                               售出
+                               <span class="caret"></span>
+                           </button>
+                       </case>
+                       <case value="5">
+                           <button class="btn btn-danger dropdown-toggle wst-btn-dropdown"  type="button" data-toggle="dropdown">
+                               配送
+                               <span class="caret"></span>
+                           </button>
+                       </case>
+                       <case value="6">
+                           <button class="btn btn-danger dropdown-toggle wst-btn-dropdown"  type="button" data-toggle="dropdown">
+                               完成
+                               <span class="caret"></span>
+                           </button>
+                       </case>
+                   </switch>
+                       <ul class="dropdown-menu" role="menu">
+                           <li role="presentation">
+                               <a role="menuitem" tabindex="-1" href="javascript:changeStatus({$vo['goodsId']},1)">在售</a>
+                               <a role="menuitem" tabindex="-1" href="javascript:changeStatus({$vo['goodsId']},2)">下架</a>
+                               <a role="menuitem" tabindex="-1" href="javascript:changeStatus({$vo['goodsId']},3)">取回</a>
+                               <a role="menuitem" tabindex="-1" href="javascript:changeStatus({$vo['goodsId']},4)">售出</a>
+                               <a role="menuitem" tabindex="-1" href="javascript:changeStatus({$vo['goodsId']},5)">配送</a>
+                               <a role="menuitem" tabindex="-1" href="javascript:changeStatus({$vo['goodsId']},6)">完成</a>
+                               <a role="menuitem" tabindex="-1" href="javascript:changeStatus({$vo['goodsId']},0)">审核</a>
+                           </li>
+                       </ul>
+                   </div>
+               </td>
+               <td>
+               <a class="btn btn-primary glyphicon" href='{:U("Home/Goods/toEdit",array("umark"=>"queryOnSaleByPage","id"=>$vo["goodsId"]))}'>编辑</a>
+               </td>
+             </tr>
+             </volist>
+             <tr>
+                <td colspan='10' align='center'>{$Page['pager']}</td>
+             </tr>
+           </tbody>
+        </table>
+       </div>
+   </body>
+</html>

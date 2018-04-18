@@ -1,0 +1,26 @@
+<meta charset="utf-8">
+        <table class="table table-hover table-striped table-bordered wst-form center">
+           <tr>
+             <th width='100'>时间</th>
+             <th width='100'>类型</th>
+             <th width='100'>金额</th>
+           </tr>
+            <volist name="page['root']" id="vo">
+                <tr style="text-align: right">
+                    <td>{$vo.createTime}</td>
+                    <td>
+                        <switch name="vo['moneyType']">
+                            <case value="1">充值</case>
+                            <case value="2">支出</case>
+                        </switch>
+                    </td>
+                    <td>{$vo.money}</td>
+                </tr>
+            </volist>
+            <tr>
+                <td colspan='3' style='padding-left:200px;'>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">返&nbsp;回</button>
+                </td>
+            </tr>
+        </table>
+       </form>

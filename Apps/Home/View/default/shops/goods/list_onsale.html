@@ -1,0 +1,153 @@
+<extend name="./Apps/Home/View/default/shops/layout.html" />
+<block name="content">
+<style type="text/css">
+#preview{border:1px solid #cccccc; background:#CCC;color:#fff; padding:5px; display:none; position:absolute;}
+</style>
+<script>
+$(document).ready(function(){
+    $('.imgPreview').imagePreview();
+    <notempty name='shopCatId1'>
+    getShopCatListForGoods('{$shopCatId1}','{$shopCatId2}');
+    </notempty>
+});
+</script>
+    <div class="wst-body"> 
+       <div class='wst-page-header'>卖家中心 > 出售中的商品</div>
+       <div class='wst-page-content'>
+        <div class='wst-tbar-query'>
+        商品：<input type='text' id='goodsName' value='{$goodsName}'/>
+      <input type='hidden' id='pageNo' value='{$pageNo}'/>
+      <button class='wst-btn-query' onclick='javascript:queryOnSale()'>查询</button>
+        </div>
+        <div class='wst-tbar-group'>
+           <span></span>
+           <!--<a href='javascript:batchDel()'><span class='del btn'></span>删除</a>-->
+            <switch name="umark">
+                <case value="unsale">
+                    <a href='javascript:sale(1)'><span class='best btn'></span>通过</a>
+                    <a href='javascript:sale(2)'><span class='unSale btn'></span>拒绝</a>
+                </case>
+                <case value="onsale">
+                    <a href='javascript:sale(2)'><span class='unSale btn'></span>下架</a>
+                    <a href='javascript:goodsSet("isRecomm","queryUnSaleByPage")'><span class='recomm btn'></span>推荐</a>
+                    <a href='javascript:sale(3)'><span class='hot btn'></span>发货</a>
+                </case>
+                <case value="inbox">
+                    <a href='javascript:sale(4)'><span class='unSale btn'></span>送回</a>
+                </case>
+                <case value="onroad">
+                    <a href='javascript:sale(5)'><span class='best btn'></span>流通</a>
+                </case>
+            </switch>
+        </div>
+        <table class='wst-list'>
+           <thead>
+             <tr>
+               <th width='30'><input type='checkbox' onclick='javascript:WST.checkChks(this,".chk")'/></th>
+               <th width="60"></th>
+               <th >商品名称</th>
+               <th width="100">商品编号</th>
+               <th width="80">价格</th>
+               <th width="80">分类</th>
+               <th width="40">推荐</th>
+               <th width="40">状态</th>
+               <th width='120'>操作</th>
+             </tr>
+           </thead>
+           <tbody>
+            <volist name="Page['root']" id="vo" key='i'>
+             <tr>
+               <td><input class='chk' type='checkbox' value='{$vo['goodsId']}'/></td>
+               <td <if condition="$vo['goodsThums'] neq ''">img='{$vo['goodsThums']}' class='imgPreview'</if>>
+               <div  style="position:relative;padding:4px 0;">
+               <?php if($vo['isDistribut']==1 && (($shopConf["distributType"]==1 && $vo['commission']>0) || $shopConf["distributType"]==2)){ ?><span class="wst-distribut-tip">销</span><?php } ?>
+               <img class='lazyImg' data-original="__ROOT__/{$vo['goodsThums']}" height="50" width="50"/>
+               </div>
+               </td>
+               <td><div class="wst-gnowrap">{$vo['goodsName']}</div></td>
+               <td><div style="cursor:pointer;">{$vo['goodsId']}</div></td>
+               <td><div style="cursor:pointer;">{$vo['shopPrice']}</div></td>
+               <td><div style="cursor:pointer;">{$vo['catName']}</div></td>
+               <td>
+                     <div style="cursor:pointer;">
+                         <if condition="$vo['isRecomm'] == 1 ">
+                             <span class='wst-state_yes'></span>
+                             <else/>
+                             <span class='wst-state_no'></span>
+                         </if></div>
+               </td>
+                 <td><div style="cursor:pointer;">{:getGoodsStatus($vo['goodsType'],$vo['goodsStatus'])}</div></td>
+
+               <td>
+               <?php $isLast =  ($Page["totalPage"]==$Page["currPage"] && (count($Page['root'])==$i) && $i==1)?1:0; ?>
+               <a href="javascript:toEditGoods({$vo['goodsId']},'queryOnSaleByPage')" class='btn edit' title='编辑'></a>
+               <a href="javascript:delGoods({$vo['goodsId']},{$isLast},'queryOnSaleByPage')" class='btn del' title='删除'></a>
+               &nbsp;
+               </td>
+             </tr>
+             </volist>
+             <tfoot>
+             <tr>
+                <td colspan='13'>
+                <div class="wst-page" style="float:right;padding-bottom:10px;">
+						<div id="wst-page-items"></div>
+				</div>
+				  
+                <script>
+              
+			    <if condition="$Page['totalPage'] gt 1">
+			    $(document).ready(function(){
+					laypage({
+					    cont: 'wst-page-items',
+					    pages: {$Page['totalPage']}, //总页数
+					    skip: true, //是否开启跳页
+					    skin: '#e23e3d',
+					    groups: 3, //连续显示分页数
+					    curr: function(){ //通过url获取当前页，也可以同上（pages）方式获取
+					        var page = location.search.match(/p=(\d+)/);
+					        return page ? page[1] : 1;
+					    }(), 
+					    jump: function(e, first){ //触发分页后的回调
+					        if(!first){ //一定要加此判断，否则初始时会无限刷新
+					        	var nuewurl = WST.splitURL("p");
+					        	var ulist = nuewurl.split("?");
+					        	if(ulist.length>1){
+					        		location.href = nuewurl+'&p='+e.curr;
+					        	}else{
+					        		location.href = '?p='+e.curr;
+					        	}
+					            
+					        }
+					    }
+					});
+			    });
+				</if>
+				</script>
+                </td>
+             </tr>
+             </tfoot>
+           </tbody>
+        </table>
+        <div class='wst-tbar-group'>
+           <span></span>
+            <switch name="umark">
+                <case value="unsale">
+                    <a href='javascript:sale(1)'><span class='best btn'></span>通过</a>
+                    <a href='javascript:sale(2)'><span class='unSale btn'></span>拒绝</a>
+                </case>
+                <case value="onsale">
+                    <a href='javascript:sale(2)'><span class='unSale btn'></span>下架</a>
+                    <a href='javascript:goodsSet("isRecomm","queryUnSaleByPage")'><span class='recomm btn'></span>推荐</a>
+                    <a href='javascript:sale(3)'><span class='hot btn'></span>发货</a>
+                </case>
+                <case value="inbox">
+                    <a href='javascript:sale(4)'><span class='unSale btn'></span>送回</a>
+                </case>
+                <case value="onroad">
+                    <a href='javascript:sale(5)'><span class='best btn'></span>流通</a>
+                </case>
+            </switch>
+        </div>
+        </div>
+    </div>
+</block> 

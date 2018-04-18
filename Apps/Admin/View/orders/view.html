@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{$CONF['shopTitle']['fieldValue']}后台管理中心</title>
+    <link href="__PUBLIC__/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="__ROOT__/Apps/Admin/View/css/AdminLTE.css" rel="stylesheet" type="text/css"/>
+    <link rel="stylesheet" type="text/css" href="__PUBLIC__/plugins/webuploader/style.css"/>
+    <link rel="stylesheet" type="text/css" href="__PUBLIC__/plugins/webuploader/webuploader.css"/>
+    <style>
+        .filelist li .setdef {
+            background: none repeat scroll 0 0 #F48C3A;
+            bottom: 0;
+            line-height: 18px;
+            height: 18px;
+            position: absolute;
+            right: 0;
+            padding: 0 5px;
+            z-index: 9999;
+            color: #FFFFFF;
+        }
+        .filelist li .setdel:hover{
+            color: #E4F14A;
+        }
+        .filelist li .setdel {
+            cursor:pointer;
+            background: none repeat scroll 0 0 #3b72a5;
+            top: 200;
+            color: #FFFFFF;
+            height: 18px;
+            line-height: 18px;
+            padding: 0 5px;
+            position: absolute;
+            right: 0px;
+            z-index: 9999;
+        }
+
+        .filelist li img {
+            cursor: pointer;
+        }
+
+
+        #uploader .filelist li{
+            display: inline;
+            float: left;
+            font-size: 12px;
+            height: auto;
+            margin: 0 8px 8px 0;
+            overflow: hidden;
+            position: relative;
+            text-align: center;
+            width: 152px;
+        }
+    </style>
+
+    <!--[if lt IE 9]>
+    <script src="__PUBLIC__/js/html5shiv.min.js"></script>
+    <script src="__PUBLIC__/js/respond.min.js"></script>
+    <![endif]-->
+    <script src="__PUBLIC__/js/jquery.min.js"></script>
+    <script src="__PUBLIC__/plugins/bootstrap/js/bootstrap.min.js"></script>
+    <script src="__PUBLIC__/plugins/plugins/plugins.js"></script>
+    <script src="__PUBLIC__/plugins/formValidator/formValidator-4.1.3.js"></script>
+</head>
+<script type="text/javascript">
+    var WST = ThinkPHP = window.Think = {
+        "ROOT"   : "__ROOT__",
+        "APP"    : "__APP__",
+        "PUBLIC" : "__PUBLIC__",
+        "DEEP"   : "{:C('URL_PATHINFO_DEPR')}",
+        "MODEL"  : ["{:C('URL_MODEL')}", "{:C('URL_CASE_INSENSITIVE')}", "{:C('URL_HTML_SUFFIX')}"],
+        "VAR"    : ["{:C('VAR_MODULE')}", "{:C('VAR_CONTROLLER')}", "{:C('VAR_ACTION')}"],
+        "DOMAIN" : "{:WSTDomain()}",
+        "CITY_ID" : "{$currArea['areaId']}",
+        "CITY_NAME" : "{$currArea['areaName']}",
+        "DEFAULT_IMG": "{:WSTDomain()}/{$CONF['goodsImg']}",
+        "MALL_NAME" : "{$CONF['mallName']}",
+        "SMS_VERFY"  : "{$CONF['smsVerfy']}",
+        "PHONE_VERFY"  : "{$CONF['phoneVerfy']}",
+        "IS_LOGIN" :"{$WST_IS_LOGIN}",
+        "WST_STYLE" :"{$WST_STYLE}"
+    }
+</script>
+<script src="/wstmall_v1.9.5_170829/Public/js/think.js"></script>
+<script>
+    var ablumInit = false;
+    $(function () {
+      uploadAblumInit();
+        var uploading = null;
+        uploadFile({
+            server:Think.U('Admin/shops/uploadPic'),pick:'#goodImgPicker',
+            formData: {dir:'orders'},
+            accept: {
+                title: 'Images',
+                extensions: 'gif,jpg,jpeg,png',
+                mimeTypes: 'image/jpg,image/jpeg,image/png,image/gif'
+            },
+            callback:function(f){
+                layer.close(uploading);
+                var json = WST.toJson(f);
+                console.log(json)
+                $('#goodsImgPreview').attr('src',WST.DOMAIN+"/"+json.file.savepath+json.file.savethumbname);
+                $('#goodsImg').val(json.file.savepath+json.file.savename);
+                $('#goodsThums').val(json.file.savepath+json.file.savethumbname);
+                $('#goodsImgPreview').show();
+            },
+            progress:function(rate){
+                uploading = WST.msg('正在上传图片，请稍后...');
+            }
+        });
+        $('input[name="isDistribut"]').click(function(){
+            if($(this).val()==1){
+                $(".commission_tr").show();
+            }else{
+                $(".commission_tr").hide();
+            }
+        });
+    });
+
+    function imglimouseover(obj){
+        if(!$(obj).find('.file-panel').html()){
+            $(obj).find('.setdel').addClass('trconb');
+            $(obj).find('.setdel').css({"display":""});
+        }
+    }
+
+    function imglimouseout(obj){
+
+        $(obj).find('.setdel').removeClass('trconb');
+        $(obj).find('.setdel').css({"display":"none"});
+    }
+
+    function imglidel(obj,id){
+        if (confirm('是否删除图片?')) {
+            $.ajax({
+                //请求方式
+                type:'POST',
+                //发送请求的地址
+                url:"{:U('Admin/orders/delImg')}",
+                //服务器返回的数据类型
+                dataType:'json',
+                //发送到服务器的数据，对象必须为key/value的格式，jquery会自动转换为字符串格式
+                data:{id:id},
+                success:function(data){
+                    if(data!=false){
+                        WST.msg( '删除成功', {icon: 1});
+                        $(obj).parent().remove();
+                    }
+
+                },
+                error:function(jqXHR){
+                    //请求失败函数内容
+                }
+            });
+            return;
+        }
+    }
+
+    function imgmouseover(obj){
+        $(obj).find('.wst-gallery-goods-del').show();
+    }
+    function imgmouseout(obj){
+        $(obj).find('.wst-gallery-goods-del').hide();
+    }
+    function delImg(obj){
+        $(obj).parent().remove();
+    }
+</script>
+<body class="wst-page">
+<form name="myform" method="post" id="myform">
+    <input type='hidden' id='id' value='{$object.orderId}'/>
+    <table class="table table-hover table-striped table-bordered wst-form">
+        <tr>
+            <td>
+                <span style='font-weight:bold;'>订单号：{$object['orderNo']}</span>
+                <span style='margin-left:100px;'>
+              状态： <if condition='$vo["orderStatus"] eq 0'>下单成功
+               <elseif condition='$vo["orderStatus"] eq 1'/>上门取件
+               <elseif condition='$vo["orderStatus"] eq 2'/>护理中
+			   <elseif condition='$vo["orderStatus"] eq 3'/>护理完成
+			   <elseif condition='$vo["orderStatus"] eq 4'/>订单完成
+               <else/>
+                   买家已删除
+			   </if>
+             </span></td>
+        </tr>
+        <tr>
+            <td style='font-weight:bold;'>订单日志</td>
+        </tr>
+        <tr>
+            <td>
+                <table width='700'>
+                    <tr>
+                        <td width='220'>操作时间</td>
+                        <td width='350'>操作信息</td>
+                        <td width='230'>操作人</td>
+                    </tr>
+                    <volist name="object['log']" id="log">
+                        <tr>
+                            <td>{$log['logTime']}</td>
+                            <td>{$log['logContent']}</td>
+                            <td>{$log['loginName']}
+                                <notempty name="log['shopName']">({$log['shopName']})</notempty>
+                            </td>
+                        </tr>
+                    </volist>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td style='font-weight:bold;'>订单信息</td>
+        </tr>
+        <tr>
+            <td>
+                <table width='700'>
+                    <tr>
+                        <td style='text-align:right'>支付方式：</td>
+                        <td>
+                            <if condition='$object["payType"] eq 1'>现金付款
+                                <else/>
+                                积分付款
+                            </if>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style='text-align:right'>配送方式：</td>
+                        <td>
+                            <if condition='$object["deliverType"] eq 1'>快递送件
+                                <else/>
+                                预约取送
+                            </if>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style='text-align:right'>用户留言：</td>
+                        <td>{$object['orderRemarks']}</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td style='font-weight:bold;'>取件信息</td>
+        </tr>
+        <tr>
+            <td>
+                <table width='700'>
+                    <tr>
+                        <td width='120' style='text-align:right'>姓名：</td>
+                        <td>{$object['userName']}</td>
+                    </tr>
+                    <tr>
+                        <td style='text-align:right'>地址：</td>
+                        <td>{$object['userAddress']}</td>
+                    </tr>
+                    <tr>
+                        <td style='text-align:right'>联系方式：</td>
+                        <td>
+                            {$object['userPhone']}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style='text-align:right'>取件时间：</td>
+                        <td>
+                            {$object['receiveTime']}
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td style='font-weight:bold;'>照片</td>
+        </tr>
+        <tr style="min-height: 150px">
+            <td>
+                <div id='galleryImgs' class='wst-gallery-imgs'>
+                        <div id="tt"></div>
+                        <if condition="count($object['gallery']) eq 0" >
+                            <div id="wrapper">
+                                <div id="container">
+                                    <!--头部，相册选择和格式选择-->
+                                    <div style="border-bottom:1px solid #dadada;padding:10px; ">
+                                        图片大小:800 x 800 (px)(格式为 gif, jpg, jpeg, png)
+                                    </div>
+                                    <div id="uploader">
+                                        <div class="queueList">
+                                            <div id="dndArea" class="placeholder">
+                                                <div id="filePicker"></div>
+                                            </div>
+                                            <ul class="filelist"></ul>
+                                        </div>
+                                        <div class="statusBar" style="display:none">
+                                            <div class="progress">
+                                                <span class="text">0%</span>
+                                                <span class="percentage"></span>
+                                            </div>
+                                            <div class="info"></div>
+                                            <div class="btns">
+                                                <div id="filePicker2" class="webuploader-containe webuploader-container"></div><div class="uploadBtn state-finish">开始上传</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <else/>
+                            <div id="wrapper">
+                                <div id="container">
+                                    <div id="uploader">
+                                        <div class="queueList">
+                                            <div id="dndArea" class="placeholder element-invisible">
+                                                <div id="filePicker" class="webuploader-container"></div>
+                                            </div>
+                                            <ul class="filelist">
+                                                <volist name="object['gallery']" id="vo" key='i'>
+
+                                                    <li style="border: 1px solid rgb(59, 114, 165)" order="100" onmouseover="imglimouseover(this)" onmouseout="imglimouseout(this)">
+                                                        <input type="hidden" class="gallery-img" iv="{$vo.goodsThumbs}" v="{$vo.goodsImg}" />
+                                                        <img width="152" height="152" class='lazyImg' src="__ROOT__/{$vo.goodsThumbs}"><span class="setdef" style="display:none">默认</span><span class="setdel" onclick="imglidel(this,{$vo.id})" style="display:none">删除</span>
+                                                    </li>
+
+                                                </volist>
+                                            </ul>
+                                        </div>
+                                        <div class="statusBar" style="">
+                                            <div class="progress">
+                                                <span class="text"></span>
+                                                <span class="percentage"></span>
+                                            </div>
+                                            <div class="info"></div>
+                                            <div class="btns">
+                                                <div id="filePicker2" class="webuploader-containe webuploader-container"></div>
+                                                <div class="uploadBtn state-finish">开始上传</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </if>
+                    </div>
+            </td>
+
+        </tr>
+        <tr>
+            <td style='text-align:right;padding-right:10px;'>总金额：￥{$object['totalMoney']}<br/>
+                <span>订单金额：</span><span>￥{$object['totalMoney']}</span><br/>
+                <span>快递金额：</span><span>￥{$object['deliverMoney']}</span><br/>
+                <span style='font-weight:bold;font-size:20px'>实付金额：</span><span
+                        style='font-weight:bold;font-size:20px;color:red;'>￥{$object['realTotalMoney']}</span></td>
+        </tr>
+        <tr>
+            <td colspan='2' align='center'>
+                <button type="button" class="btn btn-primary" onclick='javascript:location.href="{$referer}"'>返&nbsp;回
+                </button>
+            </td>
+        </tr>
+    </table>
+</form>
+</body>
+<script src="/wstmall_v1.9.5_170829/Public/js/common.js"></script>
+<script src="/wstmall_v1.9.5_170829/Apps/Home/View/default/js/shopcom.js"></script>
+<script src="/wstmall_v1.9.5_170829/Apps/Home/View/default/js/head.js"></script>
+<script src="/wstmall_v1.9.5_170829/Apps/Home/View/default/js/common.js"></script>
+<script src="/wstmall_v1.9.5_170829/Public/plugins/layer/layer.min.js"></script>
+<script src="/wstmall_v1.9.5_170829/Apps/Home/View/default/js/audio.js"></script>
+<script type="text/javascript" src="/wstmall_v1.9.5_170829/Public/plugins/webuploader/webuploader.js"></script>
+<script type="text/javascript" src="__ROOT__/Apps/Admin/View/js/orderbatchupload.js"></script>
+</html>

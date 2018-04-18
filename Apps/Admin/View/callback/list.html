@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+   <head>
+      <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>{$CONF['shopTitle']['fieldValue']}后台管理中心</title>
+      <link href="__PUBLIC__/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+      <link href="__ROOT__/Apps/Admin/View/css/AdminLTE.css" rel="stylesheet" type="text/css" />
+      <!--[if lt IE 9]>
+      <script src="__PUBLIC__/js/html5shiv.min.js"></script>
+      <script src="__PUBLIC__/js/respond.min.js"></script>
+      <![endif]-->
+      <script src="__PUBLIC__/js/jquery.min.js"></script>
+      <script src="__PUBLIC__/plugins/bootstrap/js/bootstrap.min.js"></script>
+      <script src="__PUBLIC__/js/common.js"></script>
+      <script src="__PUBLIC__/plugins/plugins/plugins.js"></script>
+   </head>
+   <body class='wst-page'>
+       <div class="wst-body"> 
+        <table class="table table-hover table-striped table-bordered wst-list">
+           <thead>
+             <tr>
+                 <th>
+                    序号
+                 </th>
+                 <th>
+                     用户昵称
+                 </th>
+                 <th>
+                    问题类型
+                 </th>
+                 <th>
+                   描述
+                 </th>
+             </tr>
+           </thead>
+           <tbody>
+           <empty name="Page['root']">
+               <tr>
+                   <td colspan='9' align='center'>暂无数据</td>
+               </tr>
+           </empty>
+           <volist name="Page['root']" id="vo" key='key'>
+             <tr>
+                 <td>
+                     {$key}
+                 </td>
+                 <td>
+                     <a href="{:U('WxUsers/toEdit',array('id'=>$vo['userId']))}">{$vo['userName']}</a>
+                 </td>
+                 <td>
+                     <switch name="vo['questionType']">
+                         <case value="1">功能异常</case>
+                         <case value="2">产品建议</case>
+                         <case value="3">其他问题</case>
+                     </switch>
+                 </td>
+                 <td>{$vo['content']}</td>
+             </tr>
+             </volist>
+             <tr>
+                <td colspan='4' align='center'>{$Page['pager']}</td>
+             </tr>
+           </tbody>
+        </table>
+       </div>
+   </body>
+</html>

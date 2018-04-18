@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{$CONF['shopTitle']}后台管理中心</title>
+    <link href="__PUBLIC__/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="__ROOT__/Apps/Admin/View/css/AdminLTE.css" rel="stylesheet" type="text/css"/>
+    <link rel="stylesheet" href="__ROOT__/Apps/Admin/View/css/daterangepicker/daterangepicker-bs3.css">
+    <!--[if lt IE 9]>
+    <script src="__PUBLIC__/js/html5shiv.min.js"></script>
+    <script src="__PUBLIC__/js/respond.min.js"></script>
+    <![endif]-->
+    <script src="__PUBLIC__/js/jquery.min.js"></script>
+    <script src="__PUBLIC__/plugins/bootstrap/js/bootstrap.min.js"></script>
+    <script src="__ROOT__/Apps/Admin/View/js/daterangepicker.js"></script>
+    <script src="__PUBLIC__/js/common.js"></script>
+    <script type="text/javascript" src="__PUBLIC__/plugins/echarts/echarts.common.min.js"></script>
+</head>
+<script>
+    function statOrders() {
+        var style, option;
+        var params = {};
+        var myChart = echarts.init(document.getElementById('container'));
+        style = {
+            normal: {
+                label: {
+                    show: true,
+                    position: 'top',
+                    formatter: '{c}',
+                    color: 'green'
+                }
+            }
+        }
+        $('#container').show();
+        $.post("{:U('Admin/Reports/nowReport')}", params, function (data, textStatus) {
+            console.log(data);
+            var json = WST.toJson(data);
+            if (json.status == '1') {
+                if (json.list)
+                    var days = [];
+                    var sr = [];
+                    for (var value in json.days) {
+                        days.push(json.days[value]);
+                    }
+                    for (var key in json.list) {
+                        var temp = [];
+                        for (var keys in json.list[key]) {
+                            temp.push(json.list[key][keys]);
+                        }
+                        sr.push(temp);
+                    }
+                    console.log(days, sr);
+                    option = {
+                        title: {
+                            text: '实时收入统计'
+                        },
+                        tooltip: {
+                            trigger: 'axis'
+                        },
+                        legend: {
+                            data: ['有效订单']
+                        },
+                        toolbox: {
+                            show: true,
+                            feature: {
+                                mark: {show: true},
+                                dataView: {show: false, readOnly: false},
+                                magicType: {show: true, type: ['line', 'bar']},
+                                restore: {show: true},
+                                saveAsImage: {show: true}
+                            }
+                        },
+                        calculable: true,
+                        xAxis: [
+                            {
+                                type: 'category',
+                                data: days,
+                                boundaryGap: false
+                            }
+                        ],
+                        yAxis: [
+                            {
+                                type: 'value',
+                                axisLabel: {
+                                    formatter: '{value}'
+                                }
+                            }
+                        ],
+                        series: [
+                            {
+                                name: '会员充值',
+                                type: 'line',
+                                data: sr[0],
+                                itemStyle: style,
+                                markPoint: {
+                                    data: sr[0]
+                                },
+                                color: ['green'],
+                                markLine: {
+                                    data: [
+                                        {type: 'average', name: '平均值'}
+                                    ]
+                                }
+                            },
+                            {
+                                name: '洗衣下单',
+                                type: 'line',
+                                data: sr[1],
+                                itemStyle: style,
+                                markPoint: {
+                                    data: sr[1]
+                                },
+                                color: ['blue'],
+                                markLine: {
+                                    data: [
+                                        {type: 'average', name: '平均值'}
+                                    ]
+                                }
+                            },
+                            {
+                                name: '购衣下单',
+                                type: 'line',
+                                data: sr[2],
+                                itemStyle: style,
+                                color: ['red'],
+                                markPoint: {
+                                    data: sr[2]
+                                },
+                                markLine: {
+                                    data: [
+                                        {type: 'average', name: '平均值'}
+                                    ]
+                                }
+                            }
+                        ]
+                    };
+                    myChart.setOption(option);
+                    $('#report1').html(json.loginMember)
+                    $('#report2').html(json.totalMember)
+                    $('#report3').html(json.totalMoney)
+                } else {
+                    $('#container').empty();
+                }
+        });
+
+    }
+    $(function () {
+        statOrders();
+    });
+</script>
+<body class='wst-page'>
+<div class="wst-body">
+    <style>
+        .wst-body {
+            display: flex;
+        }
+
+        .wst-body #container {
+            width: 1100px;
+            height: 800px;
+        }
+
+        .rside {
+            flex: 1;
+        }
+    </style>
+    <div id="container"></div>
+    <div class="rside">
+        <div style="padding-top: 20%">
+
+            <div>
+            <label>访客数:</label>
+            <label id="report1"></label>
+            </div><br/>
+            <div>
+            <label>总付款人数:</label>
+            <label  id="report2"></label>
+            </div><br/>
+            <div>
+            <label>总金额:</label>
+            <label id="report3"></label>
+            </div><br/>
+        </div>
+    </div>
+</div>
+</body>
+</html>
