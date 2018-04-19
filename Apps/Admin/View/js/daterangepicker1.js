@@ -41,11 +41,11 @@
 
         this.format = 'MM/DD/YYYY';
         this.separator = ' - ';
-
+        this.singleDatePicker = true;
         this.locale = {
             applyLabel: 'Apply',
             cancelLabel: 'Cancel',
-            fromLabel: 'From',
+            fromLabel: '选择时间',
             toLabel: 'To',
             weekLabel: 'W',
             customRangeLabel: 'Custom Range',
@@ -96,17 +96,13 @@
                 '<div class="calendar left"></div>' +
                 '<div class="calendar right"></div>' +
                 '<div class="ranges">' +
-                  '<div class="range_inputs">' +
-                    '<div class="daterangepicker_start_input" style="float: left">' +
-                      '<label for="daterangepicker_start">' + this.locale.fromLabel + '</label>' +
-                      '<input class="input-mini" type="text" name="daterangepicker_start" value="" disabled="disabled" />' +
+                  '<div class="range_inputs" style="text-align: center">' +
+                    '<div class="daterangepicker_start_input" style="width:100%;text-align:center;">' +
+                      '<label for="daterangepicker_start" style="margin: 0 auto;font-size: 18px;font-weight: bold;padding:10px 0;height:60px;line-height: 60px;width:100%;text-align: center">' + this.locale.fromLabel + '</label>' +
+                      '<input class="input-mini" type="text" style="margin: 0 auto 20px;font-size: 16px;text-align: center;width:120px" name="daterangepicker_start" value="" disabled="disabled" />' +
                     '</div>' +
-                    '<div class="daterangepicker_end_input" style="float: left; padding-left: 11px">' +
-                      '<label for="daterangepicker_end">' + this.locale.toLabel + '</label>' +
-                      '<input class="input-mini" type="text" name="daterangepicker_end" value="" disabled="disabled" />' +
-                    '</div>' +
-                    '<button class="' + this.applyClass + ' applyBtn" disabled="disabled">' + this.locale.applyLabel + '</button>&nbsp;' +
-                    '<button class="' + this.cancelClass + ' cancelBtn">' + this.locale.cancelLabel + '</button>' +
+                    '<button class="' + this.applyClass + ' applyBtn" disabled="disabled" style="width: 100%;">' + this.locale.applyLabel + '</button>&nbsp;' +
+                    '<button class="' + this.cancelClass + ' cancelBtn" style="width: 100%">' + this.locale.cancelLabel + '</button>' +
                   '</div>' +
                 '</div>' +
               '</div>';
@@ -341,7 +337,7 @@
 
         updateFormInputs: function () {
             this.container.find('input[name=daterangepicker_start]').val(this.startDate.format(this.format));
-            this.container.find('input[name=daterangepicker_end]').val(this.endDate.format(this.format));
+            // this.container.find('input[name=daterangepicker_end]').val(this.endDate.format(this.format));
 
             if (this.startDate.isSame(this.endDate) || this.startDate.isBefore(this.endDate)) {
                 this.container.find('button.applyBtn').removeAttr('disabled');
@@ -454,7 +450,7 @@
 
         updateInputText: function() {
             if (this.element.is('input'))
-                this.element.val(this.startDate.format(this.format) + this.separator + this.endDate.format(this.format));
+                this.element.val(this.startDate.format(this.format));
         },
 
         clickRange: function (e) {
@@ -635,7 +631,7 @@
             this.leftCalendar.calendar = this.buildCalendar(this.leftCalendar.month.month(), this.leftCalendar.month.year(), this.leftCalendar.month.hour(), this.leftCalendar.month.minute(), 'left');
             this.rightCalendar.calendar = this.buildCalendar(this.rightCalendar.month.month(), this.rightCalendar.month.year(), this.rightCalendar.month.hour(), this.rightCalendar.month.minute(), 'right');
             this.container.find('.calendar.left').html(this.renderCalendar(this.leftCalendar.calendar, this.startDate, this.minDate, this.maxDate));
-            this.container.find('.calendar.right').html(this.renderCalendar(this.rightCalendar.calendar, this.endDate, this.startDate, this.maxDate));
+            // this.container.find('.calendar.right').html(this.renderCalendar(this.rightCalendar.calendar, this.endDate, this.startDate, this.maxDate));
 
             this.container.find('.ranges li').removeClass('active');
             var customRange = true;
@@ -810,7 +806,7 @@
             html += '</table>';
             html += '</div>';
 
-            if (this.timePicker) {
+            /*if (this.timePicker) {
 
                 html += '<div class="calendar-time">';
                 html += '<select class="hourselect">';
@@ -863,7 +859,7 @@
 
                 html += '</div>';
 
-            }
+            }*/
 
             return html;
 
